@@ -1,0 +1,10 @@
+-out::file::pdb_comments
+-nstruct 7
+-renumber_pdb 1
+-out:prefix relaxed_repacked_
+-beta
+-multi_cool_annealer 10
+-run:preserve_header
+-corrections::beta_nov16 1
+#optional but recommended
+-per_chain_renumbering 1

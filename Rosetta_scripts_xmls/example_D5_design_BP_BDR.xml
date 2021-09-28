@@ -1,0 +1,181 @@
+<ROSETTASCRIPTS> 
+  <SCOREFXNS>
+    <ScoreFunction name="bbmin_hard_cart" weights="beta_cart" symmetric="1">
+      <Reweight scoretype="coordinate_constraint" weight="2.0"/>
+      <Reweight scoretype="cart_bonded" weight="0.5"/>
+    </ScoreFunction>
+    <ScoreFunction name="hard" weights="beta" symmetric="1"/>
+    <ScoreFunction name="hard_cst" weights="beta_cst" symmetric="1" />
+    <ScoreFunction name="hard_cart" weights="beta_cart" symmetric="1"/>
+      <ScoreFunction name="soft_cst" weights="/home/acourbet/scripts/weights/beta_soft_rep_cst.wts" symmetric="1">
+        <Reweight scoretype="aa_composition" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="hard_cst_cord" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="coordinate_constraint" weight="0" />
+        <Reweight scoretype="aa_composition" weight="0" />
+        <Reweight scoretype="angle_constraint" weight="0" />
+        <Reweight scoretype="dihedral_constraint" weight="0" />
+      </ScoreFunction>
+      <ScoreFunction name="beta_aa_comp" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="aa_composition" weight="1.0" />
+        <Reweight scoretype="atom_pair_constraint" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="up_ele" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="fa_elec" weight="1.4"/>
+        <Reweight scoretype="hbond_sc" weight="2.0" />
+      </ScoreFunction>
+
+      <ScoreFunction name="sfxn_design" weights="beta_nov16" symmetric="1">
+            <Reweight scoretype="res_type_constraint" weight="2.0" />
+            <Reweight scoretype="aa_composition" weight="1.0" />
+            <Set use_hb_env_dep="true" />
+            <Reweight scoretype="approximate_buried_unsat_penalty" weight="14" />
+            <Set approximate_buried_unsat_penalty_burial_atomic_depth="4" />
+            <Set approximate_buried_unsat_penalty_hbond_energy_threshold="-1.0" />
+            <Set approximate_buried_unsat_penalty_natural_corrections1="true" />
+            <Set approximate_buried_unsat_penalty_hbond_bonus_cross_chain="-9" />
+            <Set approximate_buried_unsat_penalty_hbond_bonus_ser_to_helix_bb="1"/>
+            <Reweight scoretype="atom_pair_constraint" weight="1.0"/>
+            <Reweight scoretype="angle_constraint" weight="1.0"/>
+            <Reweight scoretype="dihedral_constraint" weight="1.0"/>
+            <Reweight scoretype="cart_bonded" weight="1.5"/>
+      </ScoreFunction>
+
+   </SCOREFXNS>
+
+<SCOREFXNS>
+    <ScoreFunction name="CENTROID" weights="fldsgn_cen" symmetric="0" >
+        <Reweight scoretype="hbond_lr_bb" weight="1.0" />
+        <Reweight scoretype="hbond_sr_bb" weight="1.0" />
+        <Reweight scoretype="atom_pair_constraint" weight="5.0" />
+        <Reweight scoretype="coordinate_constraint" weight="1.0" />
+        <Reweight scoretype="angle_constraint" weight="1.0" />
+        <Reweight scoretype="dihedral_constraint" weight="1.0" />
+        <Reweight scoretype="backbone_stub_constraint" weight="1.0" />
+        <Reweight scoretype="omega" weight="0.5" />
+        <Reweight scoretype="rama" weight="0.6" />
+    </ScoreFunction>
+</SCOREFXNS>
+
+<RESIDUE_SELECTORS>
+  <SecondaryStructure name="loops" ss="L"/>
+  <SecondaryStructure name="helices" ss="H"/>
+  <Index name="res_not_to_touch" resnums="1A-5A,8A,9A,11A-13A,15A-43A,45A,46A,49A,50A,53A-343A"/>
+  <Not name="res_to_touch" selector="res_not_to_touch"/>
+  <Neighborhood name="around_loops" distance="6.0" selector="loops"/>
+  <Not name="not_around_loops" selector="around_loops"/>      
+  <ResidueName name="polar_aas" residue_name3="SER,THR,ASN,GLN,HIS,TYR,TRP,ASP" />
+  <And name="hbnets_around_loops" selectors="around_loops,polar_aas"/>
+  <ResiduePDBInfoHasLabel name="hbnet_residues" property="HBNet" />
+  <Layer name="hbnet_core" select_core="true" core_cutoff="3.3" />
+  <And name="core_of_extension" selectors="hbnet_core,res_to_touch" />
+  <Neighborhood name="around_hbnet" selector="hbnet_residues" distance="5.0" />
+  <And name="core_around_hbnet" selectors="hbnet_core,around_hbnet"/>
+
+  <!-- Layer Design -->
+  <Layer name="surface" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true"/>
+  <Layer name="boundary" select_core="false" select_boundary="true" select_surface="false" use_sidechain_neighbors="true"/>
+  <Layer name="core" select_core="true" select_boundary="false" select_surface="false" use_sidechain_neighbors="true"/>
+  <SecondaryStructure name="sheet" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="E"/>
+  <SecondaryStructure name="entire_loop" overlap="0" minH="3" minE="2" include_terminal_loops="true" use_dssp="true" ss="L"/>
+  <SecondaryStructure name="entire_helix" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="H"/>
+  <And name="helix_cap" selectors="entire_loop">
+    <PrimarySequenceNeighborhood lower="1" upper="0" selector="entire_helix"/>
+  </And>
+  <And name="helix_start" selectors="entire_helix">
+    <PrimarySequenceNeighborhood lower="0" upper="1" selector="helix_cap"/>
+  </And>
+  <And name="helix" selectors="entire_helix">
+    <Not selector="helix_start"/>
+  </And>
+  <And name="loop" selectors="entire_loop">
+    <Not selector="helix_cap"/>
+  </And>
+
+  </RESIDUE_SELECTORS>
+
+  <TASKOPERATIONS>
+      <IncludeCurrent name="current"/>
+      <LimitAromaChi2 name="arochi" />
+      <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2="1"/>
+      <ExtraRotamersGeneric name="ex1" ex1="1"/>
+   
+      <InitializeFromCommandline name="init"/>
+
+  <OperateOnResidueSubset name="do_not_touch" selector="res_not_to_touch">
+   <PreventRepackingRLT/>
+  </OperateOnResidueSubset>
+
+  <DesignRestrictions name="layer_design">
+    <Action selector_logic="surface AND helix_start"  aas="DEKPQR"/>H
+    <Action selector_logic="surface AND helix"    aas="EKQR"/> H
+    <Action selector_logic="surface AND sheet"    aas="EKNQRST"/> H
+    <Action selector_logic="surface AND loop"   aas="DEGKNPQRST"/> H
+    <Action selector_logic="boundary AND helix_start" aas="ADEIKLMNPQRSTVWY"/>
+    <Action selector_logic="boundary AND helix"   aas="ADEIKLMNQRSTVWY"/>
+    <Action selector_logic="boundary AND sheet"   aas="DEFIKLMNQRSTVWY"/>
+    <Action selector_logic="boundary AND loop"    aas="ADEFGIKLMNPQRSTVWY"/>
+    <Action selector_logic="core AND helix_start"   aas="AILMPVWY"/>F
+    <Action selector_logic="core AND helix"     aas="AILMVWY"/> F
+    <Action selector_logic="core AND sheet"     aas="ILMVWY"/>
+    <Action selector_logic="core AND loop"      aas="AGILMPVWY"/>
+    <Action selector_logic="helix_cap"      aas="DNST"/>
+  </DesignRestrictions>
+
+   
+    <PruneBuriedUnsats name="prune_buried_unsats" allow_even_trades="false" atomic_depth_cutoff="4.0" />
+
+</TASKOPERATIONS>
+<FILTERS>
+  <ClashCheck name="clash_check" clash_dist="2" nsub_bblock="1" cutoff="0" verbose="0" write2pdb="0"/>
+  <BuriedUnsatHbonds name="uhb" scorefxn="hard_cst" cutoff="18" confidence="1"/>
+  <BuriedUnsatHbonds2 name="uhb2" scorefxn="hard_cst" cutoff="18" AHD_cutoff="90" confidence="1"/>
+  <Holes name="core_holes" threshold="2.1" confidence="1"/>
+</FILTERS>
+  <MOVERS>
+
+  <AddCompositionConstraintMover name="comp1" >
+      <Comp entry="PENALTY_DEFINITION;TYPE TRP;ABSOLUTE 0;PENALTIES 0 4;DELTA_START 0;DELTA_END 1;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION LINEAR;END_PENALTY_DEFINITION;" />
+      <Comp entry="PENALTY_DEFINITION;TYPE ALA;ABSOLUTE 0;PENALTIES 0 3;DELTA_START 0;DELTA_END 1;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION LINEAR;END_PENALTY_DEFINITION;" />
+      <Comp entry="PENALTY_DEFINITION;TYPE PHE;ABSOLUTE 0;PENALTIES 0 6;DELTA_START 0;DELTA_END 1;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION LINEAR;END_PENALTY_DEFINITION;" />
+  </AddCompositionConstraintMover>
+
+  <AddCompositionConstraintMover name="comp2" selector="hbnet_core">
+<Comp entry="PENALTY_DEFINITION;TYPE HIS ASN GLN SER THR; FRACT_DELTA_START -0.2;FRACT_DELTA_END 0.2;PENALTIES 3 0 3 ;FRACTION 0.3;BEFORE_FUNCTION QUADRATIC;AFTER_FUNCTION CONSTANT;END_PENALTY_DEFINITION" />
+<Comp entry="PENALTY_DEFINITION;TYPE ILE LEU VAL ;FRACT_DELTA_START -0.2;FRACT_DELTA_END 0.2;PENALTIES 3 0 3 ;FRACTION 0.7;BEFORE_FUNCTION QUADRATIC;AFTER_FUNCTION CONSTANT;END_PENALTY_DEFINITION" />
+  </AddCompositionConstraintMover>
+
+    <SymDofMover name="setup_symm" symm_file="/home/acourbet/symm/D5.sym" sym_dof_names="JUMP1" translation_axes="z" radial_disps="-75" rotation_axes="z" angles="0" sampling_mode="gaussian" radial_disp_deltas="2.5,2.5" angle_deltas="60,60" />   
+ 
+    <BluePrintBDR name="bdr1" use_abego_bias="0" scorefxn="CENTROID" blueprint="/home/acourbet/rotors/axle_design_mkII/C5s/blue_print_file_D5.bp" /> constraint_file="/home/acourbet/Dsym_bundles/Zhe_bundles/extended/D0/20/constraints.cst
+
+    <DumpPdb name="dump" fname="dumping_built" tag_time="True"/>
+
+    <FastRelax name="relax" repeats="1" relaxscript="InterfaceRelax2019" task_operations="do_not_touch"/>
+
+    <FastDesign name="fdes2019" relaxscript="InterfaceDesign2019" scorefxn="sfxn_design" task_operations="init,ex1_ex2,current,arochi,layer_design,do_not_touch">  ,prune_buried_unsats
+        <MoveMap name="map" bb="1" chi="1" jump="0" >
+          <Jump number="1" setting="false" />
+        </MoveMap>
+  </FastDesign>
+
+    <AddConstraintsToCurrentConformationMover name="add_cst1" use_distance_cst="0" coord_dev="2.0" CA_only="true"/>
+    <ClearConstraintsMover name="clearconstraints"/>
+
+  </MOVERS>
+
+<PROTOCOLS>
+  <Add mover="bdr1" />
+  <Add mover="setup_symm"/>
+  Add mover="add_cst1"/>
+  Add mover="relax"/>
+  <Add mover="comp1"/>
+  <Add mover="comp2"/>
+  <Add mover="fdes2019"/>
+  <Add mover="dump"/>
+  <Add filter="uhb"/>
+  <Add filter="uhb2"/>
+  Add filter="core_holes"/>
+
+</PROTOCOLS>
+</ROSETTASCRIPTS>

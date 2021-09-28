@@ -1,0 +1,127 @@
+<ROSETTASCRIPTS> 
+  <SCOREFXNS>
+    <ScoreFunction name="bbmin_hard_cart" weights="beta_cart" symmetric="1">
+      <Reweight scoretype="coordinate_constraint" weight="2.0"/>
+      <Reweight scoretype="cart_bonded" weight="0.5"/>
+    </ScoreFunction>
+    <ScoreFunction name="hard" weights="beta" symmetric="1"/>
+    <ScoreFunction name="hard_cst" weights="beta_cst" symmetric="1" />
+    <ScoreFunction name="hard_cart" weights="beta_cart" symmetric="1"/>
+      <ScoreFunction name="soft_cst" weights="/home/acourbet/scripts/weights/beta_soft_rep_cst.wts" symmetric="1">
+        <Reweight scoretype="aa_composition" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="hard_cst_cord" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="coordinate_constraint" weight="0" />
+        <Reweight scoretype="aa_composition" weight="0" />
+        <Reweight scoretype="angle_constraint" weight="0" />
+        <Reweight scoretype="dihedral_constraint" weight="0" />
+      </ScoreFunction>
+      <ScoreFunction name="beta_aa_comp" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="aa_composition" weight="1.0" />
+        <Reweight scoretype="atom_pair_constraint" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="up_ele" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="fa_elec" weight="1.4"/>
+        <Reweight scoretype="hbond_sc" weight="2.0" />
+      </ScoreFunction>
+
+   </SCOREFXNS>
+
+<SCOREFXNS>
+    <ScoreFunction name="CENTROID" weights="fldsgn_cen" symmetric="0" >
+        <Reweight scoretype="hbond_lr_bb" weight="1.0" />
+        <Reweight scoretype="hbond_sr_bb" weight="1.0" />
+        <Reweight scoretype="atom_pair_constraint" weight="1.0" />
+        <Reweight scoretype="coordinate_constraint" weight="1.0" />
+        <Reweight scoretype="angle_constraint" weight="1.0" />
+        <Reweight scoretype="dihedral_constraint" weight="1.0" />
+        <Reweight scoretype="backbone_stub_constraint" weight="1.0" />
+        <Reweight scoretype="omega" weight="0.5" />
+        <Reweight scoretype="rama" weight="0.6" />
+    </ScoreFunction>
+</SCOREFXNS>
+
+<RESIDUE_SELECTORS>
+  <SecondaryStructure name="loops" ss="L"/>
+  <SecondaryStructure name="helices" ss="H"/>
+  <Neighborhood name="around_loops" distance="6.0" selector="loops"/>
+  <Not name="not_around_loops" selector="around_loops"/>      
+  <ResidueName name="polar_aas" residue_name3="SER,THR,ASN,GLN,HIS,TYR,TRP,ASP" />
+  <And name="hbnets_around_loops" selectors="around_loops,polar_aas"/>
+  <ResiduePDBInfoHasLabel name="hbnet_residues" property="HBNet" />
+      <Layer name="hbnet_core" select_core="true" core_cutoff="3.6" />
+      <Neighborhood name="around_hbnet" selector="hbnet_residues" distance="5.0" />
+      <And name="core_around_hbnet" selectors="hbnet_core,around_hbnet"/>
+
+  <!-- Layer Design -->
+  <Layer name="surface" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true"/>
+  <Layer name="boundary" select_core="false" select_boundary="true" select_surface="false" use_sidechain_neighbors="true"/>
+  <Layer name="core" select_core="true" select_boundary="false" select_surface="false" use_sidechain_neighbors="true"/>
+  <SecondaryStructure name="sheet" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="E"/>
+  <SecondaryStructure name="entire_loop" overlap="0" minH="3" minE="2" include_terminal_loops="true" use_dssp="true" ss="L"/>
+  <SecondaryStructure name="entire_helix" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="H"/>
+  <And name="helix_cap" selectors="entire_loop">
+    <PrimarySequenceNeighborhood lower="1" upper="0" selector="entire_helix"/>
+  </And>
+  <And name="helix_start" selectors="entire_helix">
+    <PrimarySequenceNeighborhood lower="0" upper="1" selector="helix_cap"/>
+  </And>
+  <And name="helix" selectors="entire_helix">
+    <Not selector="helix_start"/>
+  </And>
+  <And name="loop" selectors="entire_loop">
+    <Not selector="helix_cap"/>
+  </And>
+
+  </RESIDUE_SELECTORS>
+
+  <TASKOPERATIONS>
+      <IncludeCurrent name="current"/>
+      <LimitAromaChi2 name="arochi" />
+      <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2="1"/>
+      <ExtraRotamersGeneric name="ex1" ex1="1"/>
+   
+      <InitializeFromCommandline name="init"/>
+
+      <RestrictToRepacking name="repack_only" />
+
+  <DesignRestrictions name="layer_design">
+    <Action selector_logic="surface AND helix_start"  aas="DEHKPQR"/>
+    <Action selector_logic="surface AND helix"    aas="EHKQR"/>
+    <Action selector_logic="surface AND sheet"    aas="EHKNQRST"/>
+    <Action selector_logic="surface AND loop"   aas="DEGHKNPQRST"/>
+    <Action selector_logic="boundary AND helix_start" aas="ADEHIKLMNPQRSTVWY"/>
+    <Action selector_logic="boundary AND helix"   aas="ADEHIKLMNQRSTVWY"/>
+    <Action selector_logic="boundary AND sheet"   aas="DEFHIKLMNQRSTVWY"/>
+    <Action selector_logic="boundary AND loop"    aas="ADEFGHIKLMNPQRSTVWY"/>
+    <Action selector_logic="core AND helix_start"   aas="AFILMPVWY"/>
+    <Action selector_logic="core AND helix"     aas="AFILMVWY"/>
+    <Action selector_logic="core AND sheet"     aas="FILMVWY"/>
+    <Action selector_logic="core AND loop"      aas="AFGILMPVWY"/>
+    <Action selector_logic="helix_cap"      aas="DNST"/>
+  </DesignRestrictions>
+
+</TASKOPERATIONS>
+<FILTERS>
+  <ClashCheck name="clash_check" clash_dist="1" nsub_bblock="1" cutoff="0" verbose="0" write2pdb="0" confidence="0"/>
+  <SymUnsatHbonds name="sym_uhb" cutoff="9" confidence="0"/>
+  <BuriedUnsatHbonds name="uhb" scorefxn="hard_cst" cutoff="6" confidence="0"/>
+  <BuriedUnsatHbonds2 name="uhb2" scorefxn="hard_cst" cutoff="6" AHD_cutoff="90" confidence="0"/>
+</FILTERS>
+  <MOVERS>
+    <SetupForSymmetry name="setup_symm" definition="/home/acourbet/symm/C3_Z.sym"/>
+    <SymPackRotamersMover name="repack" scorefxn="hard" task_operations="init,current,arochi,ex1_ex2,repack_only" />
+   <FastRelax name="relax" repeats="1"/>
+
+  </MOVERS>
+
+<PROTOCOLS>
+
+  Add mover="relax"/>
+  <Add mover="repack"/>
+  <Add filter="sym_uhb"/>
+  <Add filter="uhb"/>
+  <Add filter="uhb2"/>
+
+</PROTOCOLS>
+</ROSETTASCRIPTS>

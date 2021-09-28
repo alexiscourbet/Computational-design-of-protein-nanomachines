@@ -1,0 +1,16 @@
+connector_D4     # base name of output structures
+1                # number of helices
+A             # chains the helices belong to
+0              # number of chains (zero indexed)
+40               # number of residues of first helix 
+8               # number of residues of first segment of first helix 
+24               # number of linker residues between segments 
+0 0 1      # supercoil twist of first segment
+0 0 1      # supercoil twist of 2nd segment 
+13 16.5 8       # supercoil radius of first segment
+6.5 10 8          # supercoil radius of second segment
+90 90 1           # supercoil phase frist segment Delta_omega0? P0
+45 45 1            # supercoil phase secound segment Delta_omega0? P0
+1                # orientation of helix (1=up, -1=down)
+0 90 9      # helix phase of first segment Delta_omega1
+0 1.5 3            # z-axis offset

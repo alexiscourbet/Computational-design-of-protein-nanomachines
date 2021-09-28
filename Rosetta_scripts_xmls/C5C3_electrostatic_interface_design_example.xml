@@ -1,0 +1,164 @@
+<ROSETTASCRIPTS> 
+  <SCOREFXNS>
+    <ScoreFunction name="bbmin_hard_cart" weights="beta_cart" symmetric="1">
+      <Reweight scoretype="coordinate_constraint" weight="2.0"/>
+      <Reweight scoretype="cart_bonded" weight="0.5"/>
+    </ScoreFunction>
+    <ScoreFunction name="hard" weights="beta" symmetric="1"/>
+    <ScoreFunction name="hard_cst" weights="beta_cst" symmetric="1" />
+    <ScoreFunction name="hard_cart" weights="beta_cart" symmetric="1"/>
+      <ScoreFunction name="soft_cst" weights="/home/acourbet/scripts/weights/beta_soft_rep_cst.wts" symmetric="1">
+        <Reweight scoretype="aa_composition" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="hard_cst_cord" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="coordinate_constraint" weight="0" />
+        <Reweight scoretype="aa_composition" weight="0" />
+        <Reweight scoretype="angle_constraint" weight="0" />
+        <Reweight scoretype="dihedral_constraint" weight="0" />
+      </ScoreFunction>
+      <ScoreFunction name="beta_aa_comp" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="aa_composition" weight="1.0" />
+        <Reweight scoretype="atom_pair_constraint" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="up_ele" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="fa_elec" weight="1.4"/>
+        <Reweight scoretype="hbond_sc" weight="2.0" />
+      </ScoreFunction>
+
+      <ScoreFunction name="sfxn_design" weights="beta_nov16" symmetric="1">
+            <Reweight scoretype="res_type_constraint" weight="2.0" />
+            <Reweight scoretype="aa_composition" weight="1.0" />
+            <Set use_hb_env_dep="true" />
+            <Reweight scoretype="approximate_buried_unsat_penalty" weight="14" />
+            <Set approximate_buried_unsat_penalty_burial_atomic_depth="4" />
+            <Set approximate_buried_unsat_penalty_hbond_energy_threshold="-1.0" />
+            <Set approximate_buried_unsat_penalty_natural_corrections1="true" />
+            <Set approximate_buried_unsat_penalty_hbond_bonus_cross_chain="-9" />
+            <Set approximate_buried_unsat_penalty_hbond_bonus_ser_to_helix_bb="1"/>
+            <Reweight scoretype="atom_pair_constraint" weight="1.0"/>
+            <Reweight scoretype="angle_constraint" weight="1.0"/>
+            <Reweight scoretype="dihedral_constraint" weight="1.0"/>
+            <Reweight scoretype="cart_bonded" weight="1.5"/>
+      </ScoreFunction>
+   </SCOREFXNS>
+
+<RESIDUE_SELECTORS>
+  <SecondaryStructure name="loops" ss="L"/>
+  <SecondaryStructure name="helices" ss="H"/>
+
+if >376 => +1
+
+  <Index name="axle" resnums="357A,358A,364A,365A,368A,371A,372A,379A,382A,383A,385A,387A,389A,390A,392A,393A,396A,397A,400A,404A,439A,450A,453A,457A,460A,461A,464A,467A,471A,836B,1314C,1792D,2270E,837B,1315C,1793D,2271E,843B,1321C,1799D,2277E,844B,1322C,1800D,2278E,847B,1325C,1803D,2281E,850B,1328C,1806D,2284E,851B,1329C,1807D,2285E,858B,1336C,1814D,2292E,861B,1339C,1817D,2295E,862B,1340C,1818D,2296E,864B,1342C,1820D,2298E,866B,1344C,1822D,2300E,868B,1346C,1824D,2302E,869B,1347C,1825D,2303E,871B,1349C,1827D,2305E,872B,1350C,1828D,2306E,875B,1353C,1831D,2309E,876B,1354C,1832D,2310E,879B,1357C,1835D,2313E,883B,1361C,1839D,2317E,918B,1396C,1874D,2352E,929B,1407C,1885D,2363E,932B,1410C,1888D,2366E,936B,1414C,1892D,2370E,939B,1417C,1895D,2373E,940B,1418C,1896D,2374E,943B,1421C,1899D,2377E,946B,1424C,1902D,2380E,950B,1428C,1906D,2384E"/> 
+  <Index name="rotor" resnums="2391F,2394F,2397F,2404F,2405F,2408F,2479F,2482F,2483F,2486F,2489F,2493F,2522F,2526F,2529F,2533F,2536F,2579F,2583F,2586F,2590F,2593F,2596F,2597F,2636F,2639F,2640F,2643F,2646F,2647F,2650F,2654F,2658F,2661F,2665F,2668F,2669F,2672F,2859G,2862G,2865G,2872G,2873G,2876G,2947G,2950G,2951G,2954G,2957G,2961G,2990G,2994G,2997G,3001G,3004G,3047G,3051G,3054G,3058G,3061G,3064G,3065G,3104G,3107G,3108G,3111G,3114G,3115G,3118G,3122G,3126G,3129G,3133G,3136G,3137G,3140G,3327H,3330H,3333H,3340H,3341H,3344H,3415H,3418H,3419H,3423H,3425H,3429H,3458H,3462H,3465H,3469H,3472H,3515H,3519H,3522H,3526H,3529H,3532H,3533H,3572H,3575H,3576H,3579H,3582H,3583H,3586H,3590H,3594H,3597H,3601H,3604H,3605H,3608H"/> 
+
+  <Or name="res_to_design" selectors="axle,rotor"/>
+  <Not name="rest_of_the_rotor" selector="res_to_design"/>
+
+  <Neighborhood name="around_loops" distance="6.0" selector="loops"/>
+  <Not name="not_around_loops" selector="around_loops"/>      
+  <ResidueName name="polar_aas" residue_name3="SER,THR,ASN,GLN,HIS,TYR,TRP,ASP" />
+  <And name="hbnets_around_loops" selectors="around_loops,polar_aas"/>
+  <ResiduePDBInfoHasLabel name="hbnet_residues" property="HBNet" />
+  <Layer name="hbnet_core" select_core="true" core_cutoff="3.3" />
+  <And name="core_of_extension" selectors="hbnet_core,res_to_design" />
+  <Neighborhood name="around_hbnet" selector="hbnet_residues" distance="5.0" />
+  <And name="core_around_hbnet" selectors="hbnet_core,around_hbnet"/>
+
+  <!-- Layer Design -->
+  <Layer name="surface" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true"/>
+  <Layer name="boundary" select_core="false" select_boundary="true" select_surface="false" use_sidechain_neighbors="true"/>
+  <Layer name="core" select_core="true" select_boundary="false" select_surface="false" use_sidechain_neighbors="true"/>
+  <SecondaryStructure name="sheet" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="E"/>
+  <SecondaryStructure name="entire_loop" overlap="0" minH="3" minE="2" include_terminal_loops="true" use_dssp="true" ss="L"/>
+  <SecondaryStructure name="entire_helix" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="H"/>
+  <And name="helix_cap" selectors="entire_loop">
+    <PrimarySequenceNeighborhood lower="1" upper="0" selector="entire_helix"/>
+  </And>
+  <And name="helix_start" selectors="entire_helix">
+    <PrimarySequenceNeighborhood lower="0" upper="1" selector="helix_cap"/>
+  </And>
+  <And name="helix" selectors="entire_helix">
+    <Not selector="helix_start"/>
+  </And>
+  <And name="loop" selectors="entire_loop">
+    <Not selector="helix_cap"/>
+  </And>
+
+  </RESIDUE_SELECTORS>
+
+  <TASKOPERATIONS>
+      <IncludeCurrent name="current"/>
+      <LimitAromaChi2 name="arochi" />
+      <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2="1"/>
+      <ExtraRotamersGeneric name="ex1" ex1="1"/>
+      <InitializeFromCommandline name="init"/>
+
+  <OperateOnResidueSubset name="do_not_touch" selector="rest_of_the_rotor">
+   <RestrictToRepackingRLT/>
+  </OperateOnResidueSubset>
+
+  <OperateOnResidueSubset name="DEhqtnsya" selector="axle">
+      <RestrictAbsentCanonicalAASRLT aas="DEHQTNSYA"/>
+  </OperateOnResidueSubset>
+      
+  <OperateOnResidueSubset name="KRhqtnsya" selector="rotor">
+      <RestrictAbsentCanonicalAASRLT aas="KRHQTNSYA"/>
+  </OperateOnResidueSubset>
+      
+
+
+  <DesignRestrictions name="layer_design">
+    <Action selector_logic="surface AND helix_start"  aas="DEKPQRH"/> 
+    <Action selector_logic="surface AND helix"    aas="EKQRH"/> 
+    <Action selector_logic="surface AND sheet"    aas="EKNQRSTH"/> 
+    <Action selector_logic="surface AND loop"   aas="DEGKNPQRSTH"/> 
+    <Action selector_logic="boundary AND helix_start" aas="ADEIKLMNPQRSTVWHY"/>
+    <Action selector_logic="boundary AND helix"   aas="ADEIKLMNQRSTVWYH"/>
+    <Action selector_logic="boundary AND sheet"   aas="DEFIKLMNQRSTVWYH"/>
+    <Action selector_logic="boundary AND loop"    aas="ADEFGIKLMNPQRSTVWYH"/>
+    <Action selector_logic="core AND helix_start"   aas="AILMPVWYFH"/>
+    <Action selector_logic="core AND helix"     aas="AILMVWYFH"/> 
+    <Action selector_logic="core AND sheet"     aas="ILMVWY"/>
+    <Action selector_logic="core AND loop"      aas="AGILMPVWYFTH"/>
+    <Action selector_logic="helix_cap"      aas="DNST"/>
+  </DesignRestrictions>
+
+  <PruneBuriedUnsats name="prune_buried_unsats" allow_even_trades="false" atomic_depth_cutoff="4.0" />
+
+</TASKOPERATIONS>
+<FILTERS>
+  <ClashCheck name="clash_check" clash_dist="2" nsub_bblock="1" cutoff="0" verbose="0" write2pdb="0"/>
+  <BuriedUnsatHbonds name="uhb" scorefxn="hard_cst" cutoff="20" confidence="0"/>
+  <BuriedUnsatHbonds2 name="uhb2" scorefxn="hard_cst" cutoff="20" AHD_cutoff="90" confidence="0"/>
+  <Holes name="core_holes" threshold="2.1" confidence="1"/>
+</FILTERS>
+  <MOVERS>
+
+   <AddCompositionConstraintMover name="comp1" selector="axle">
+  <Comp entry="PENALTY_DEFINITION;TYPE GLN ASP GLU HIS THR ASN SER TYR ALA;FRACT_DELTA_START -0.3;FRACT_DELTA_END 0.3;PENALTIES 3 0 3 ;FRACTION 0.90;BEFORE_FUNCTION QUADRATIC;AFTER_FUNCTION CONSTANT;END_PENALTY_DEFINITION" /> 
+  </AddCompositionConstraintMover>
+  <AddCompositionConstraintMover name="comp2" selector="rotor"> 
+  <Comp entry="PENALTY_DEFINITION;TYPE LYS ARG HIS GLN THR ASN SER TYR ALA;FRACT_DELTA_START -0.3;FRACT_DELTA_END 0.3;PENALTIES 3 0 3 ;FRACTION 0.90;BEFORE_FUNCTION QUADRATIC;AFTER_FUNCTION CONSTANT;END_PENALTY_DEFINITION" />
+  </AddCompositionConstraintMover>
+
+    <SetupForSymmetry name="setup_symm" definition="/home/acourbet/symm/C3_Z.sym"/>
+    <DumpPdb name="dump" fname="dumping_built" tag_time="True"/>
+    <FastRelax name="relax" repeats="1" relaxscript="InterfaceRelax2019" task_operations="do_not_touch"/>
+    <FastDesign name="fdes2019" relaxscript="InterfaceDesign2019" scorefxn="sfxn_design" task_operations="init,ex1_ex2,current,arochi,layer_design,do_not_touch,DEhqtnsya,KRhqtnsya" />
+    <SymPackRotamersMover name="pack1" scorefxn="sfxn_design" task_operations="init,current,arochi,layer_design,ex1_ex2,do_not_touch" />
+    <SymPackRotamersMover name="pack2" scorefxn="sfxn_design" task_operations="init,current,arochi,layer_design,ex1_ex2,do_not_touch" />
+
+  </MOVERS>
+
+<PROTOCOLS>
+  Add mover="setup_symm"/>
+  Add mover="comp1"/>
+  Add mover="comp2"/>
+  <Add mover="pack1"/>
+  <Add mover="pack2"/>
+  <Add filter="uhb"/>
+  <Add filter="uhb2"/>
+  Add filter="core_holes"/>
+
+</PROTOCOLS>
+</ROSETTASCRIPTS>

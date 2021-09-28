@@ -1,0 +1,256 @@
+<ROSETTASCRIPTS>
+  <SCOREFXNS>
+    <ScoreFunction name="bbmin_hard_cart" weights="beta_cart" symmetric="1">
+      <Reweight scoretype="coordinate_constraint" weight="2.0"/>
+      <Reweight scoretype="cart_bonded" weight="0.5"/>
+    </ScoreFunction>
+    <ScoreFunction name="hard" weights="beta" symmetric="1"/>
+    <ScoreFunction name="hard_cst" weights="beta_cst" symmetric="1" />
+    <ScoreFunction name="hard_cart" weights="beta_cart" symmetric="1"/>
+      <ScoreFunction name="soft_cst" weights="/home/sboyken/weights/beta_soft_rep_cst.wts" symmetric="1">
+        <Reweight scoretype="aa_composition" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="hard_cst_cord" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="coordinate_constraint" weight="0" />
+        <Reweight scoretype="aa_composition" weight="0" />
+        <Reweight scoretype="angle_constraint" weight="0" />
+        <Reweight scoretype="dihedral_constraint" weight="0" />
+      </ScoreFunction>
+      <ScoreFunction name="beta_aa_comp" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="aa_composition" weight="1.0" />
+      </ScoreFunction>
+      <ScoreFunction name="up_ele" weights="beta_cst" symmetric="1" >
+        <Reweight scoretype="fa_elec" weight="1.4"/>
+        <Reweight scoretype="hbond_sc" weight="2.0" />
+      </ScoreFunction>
+   </SCOREFXNS>
+<RESIDUE_SELECTORS>
+
+  <Index name="res_to_design" resnums="125A,129A,260A,264A,399A,395A,530A,534A,665A,669A,800A,804A,935A,939A,1070A,1074A,1082B,1085B,1089B,1092B,1115B,1148B,1181B,1214B,1247B,1280B,1313B,1346B,1379B,1412B,1445B,1118B,1151B,1184B,1217B,1250B,1283B,1316B,1349B,1382B,1415B,1448B,1122B,1155B,1188B,1221B,1254B,1287B,1320B,1353B,1386B,1419B,1452B,1125B,1158B,1191B,1224B,1257B,1290B,1323B,1356B,1389B,1422B,1455B"/> 
+  
+  <Not name="rest_of_the_axle" selector="res_to_design"/>
+  
+ <Index name="axle_res" resnums="125A,129A,260A,264A,399A,395A,530A,534A,665A,669A,800A,804A,935A,939A,1070A,1074A"/>
+  <Index name="rotor_res" resnums="1082B,1085B,1089B,1092B,1115B,1148B,1181B,1214B,1247B,1280B,1313B,1346B,1379B,1412B,1445B,1118B,1151B,1184B,1217B,1250B,1283B,1316B,1349B,1382B,1415B,1448B,1122B,1155B,1188B,1221B,1254B,1287B,1320B,1353B,1386B,1419B,1452B,1125B,1158B,1191B,1224B,1257B,1290B,1323B,1356B,1389B,1422B,1455B"/> 
+
+  <SecondaryStructure name="loops" ss="L"/>
+  <SecondaryStructure name="helices" ss="H"/>
+  <Neighborhood name="around_loops" distance="6.0" selector="loops"/>
+  <Not name="not_around_loops" selector="around_loops"/>      
+  <ResidueName name="polar_aas" residue_name3="SER,THR,ASN,GLN,HIS,TYR,TRP,ASP" />
+  <And name="hbnets_around_loops" selectors="around_loops,polar_aas"/>
+  <ResiduePDBInfoHasLabel name="hbnet_residues" property="HBNet" />
+      <Layer name="hbnet_core" select_core="true" core_cutoff="3.6" />
+      <Neighborhood name="around_hbnet" selector="hbnet_residues" distance="5.0" />
+      <And name="core_around_hbnet" selectors="hbnet_core,around_hbnet"/>
+      <Layer name="pick_core_and_boundary" select_core="true" select_boundary="true" core_cutoff="3.6"/>
+      <Layer name="pick_core_and_boundary_SASA" select_core="true" select_boundary="true" use_sidechain_neighbors="false" core_cutoff="35" surface_cutoff="45" />
+      <Layer name="pick_core_and_boundary_SASA_end" select_core="true" select_boundary="true" use_sidechain_neighbors="false" core_cutoff="35" surface_cutoff="42.5" />
+      <Layer name="pick_core_SASA" select_core="true" use_sidechain_neighbors="false" core_cutoff="35" />
+      <Layer name="pick_boundary_SASA" select_boundary="true" use_sidechain_neighbors="false" core_cutoff="30" surface_cutoff="45" /> 30 here to catch polars that snake to core during fdes
+      <Layer name="pick_core_and_surface" select_core="true" select_surface="true" core_cutoff="3.6"/>
+      <Layer name="pick_core_and_surface_SASA" select_core="true" select_surface="true" core_cutoff="35" />
+      <Layer name="pick_surface_and_boundary" select_surface="true" select_boundary="true" core_cutoff="3.6"/>
+      <Layer name="pick_surface_and_boundary_SASA" select_surface="true" select_boundary="true" core_cutoff="35" surface_cutoff="45" />
+      <Chain name="chain_a" chains="A"/>
+      <Chain name="chain_b" chains="B"/>
+      <InterfaceByVector name="AB_interface" grp1_selector="chain_a" grp2_selector="chain_b"/>
+      <Not name="not_AB_interface" selector="AB_interface"/>
+      <ResidueName name="LIV" residue_name3="VAL,ILE,LEU" />
+      <And name="a_LIV" selectors="chain_a,LIV"/>
+      <And name="b_LIV" selectors="chain_b,LIV"/>
+      <And name="AB_interface_LIV" selectors="AB_interface,LIV"/>
+      <Not name="not_chain_a_LIV" selector="a_LIV"/>
+      <Not name="not_chain_b_LIV" selector="b_LIV"/>
+      <Not name="not_AB_interface_LIV" selector="AB_interface_LIV"/>
+      <Layer name="core" select_core="true" core_cutoff="3.6" />
+      <ResidueName name="boundary_polar_aa_types" residue_name3="SER,THR,HIS,ASN,GLN,ASP,GLU,ARG" />
+      <And name="boundary_polars" selectors="pick_boundary_SASA,boundary_polar_aa_types" />
+      <ResidueName name="ala_and_met_and_phe" residue_name3="ALA,MET,PHE" />
+      <Or name="fdes_res_to_design" selectors="boundary_polars,ala_and_met_and_phe" />
+      <Not name="fdes_no_design" selector="fdes_res_to_design" />
+      <And name="a_core" selectors="chain_a,pick_core_SASA"/>
+      <And name="b_core" selectors="chain_b,pick_core_SASA"/>
+    </RESIDUE_SELECTORS>
+    <TASKOPERATIONS>
+      <IncludeCurrent name="current"/>
+      <LimitAromaChi2 name="arochi" />
+      <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2="1"/>
+      <ExtraRotamersGeneric name="ex1" ex1="1"/>
+     <LayerDesign name="init_layers" layer="Nterm_core_boundary_surface_Cterm" make_pymol_script="0" use_sidechain_neighbors="True" core="3.6" >
+        <core>
+          <Helix append="HNQYSTD"/>
+        </core>
+        <boundary>
+          <Helix exclude="EKRW"/>
+        </boundary>
+      </LayerDesign>
+      <OperateOnResidueSubset name="only_loops_designable" selector="not_around_loops">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+
+      <OperateOnResidueSubset name="do_not_touch" selector="rest_of_the_axle">
+        <RestrictToRepackingRLT/>
+      </OperateOnResidueSubset>
+
+      <OperateOnResidueSubset name="hbnets_fixed" selector="hbnets_around_loops">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+<!--       <ConstrainHBondNetwork name="hbnet_task" />
+ -->      # restrict AAs of loops based on ABEGO
+      <ConsensusLoopDesign name="disallow_non_abego_aas"/>
+      # layer design with sidechain_neighbors: sidechain independent, best for initial, undesigned pose
+      <LayerDesign name="layer_all" layer="core_boundary_surface_Nterm_Cterm" make_pymol_script="0" use_sidechain_neighbors="True" core="3.6" >
+        <core>
+          <Helix append="M" />
+          <all exclude="WY" />
+        </core>
+        <boundary>
+          <Helix exclude="DRHQ" /> letting Rosetta add these results in too many unsats; HBNets already have them
+	  <all exclude="WF" />
+        </boundary>
+        <surface>
+          <all exclude="WF" />
+        </surface>
+      </LayerDesign>
+      # layer design with SASA: sidechain dependent, best once the pose is mostly designed (cavities filled in etc)
+      <LayerDesign name="layer_SASA" layer="core_boundary_surface_Nterm_Cterm" make_pymol_script="0" use_sidechain_neighbors="0" core="35" surface="45" >
+        <core>
+          <Helix append="M" />
+          <all exclude="WY" />
+        </core>
+        <boundary>
+          <Helix exclude="DRHQ" /> letting Rosetta add these results in too many unsats; HBNets already have them
+          <all exclude="WF" />
+        </boundary>
+        <surface>
+          <all exclude="WF" />
+        </surface>
+      </LayerDesign> 
+      To get rid of surface exposed hydrophobics after fast design step
+      <LayerDesign name="layer_SASA_end" layer="core_boundary_surface_Nterm_Cterm" make_pymol_script="0" use_sidechain_neighbors="0" core="35" surface="42.5" >
+        <core>
+          <Helix append="M" />
+          <all exclude="WY" />
+        </core>
+        <boundary>
+          <Helix exclude="DRHQ" />
+          <all exclude="WF" />
+        </boundary>
+        <surface>
+          <all exclude="WF" />
+        </surface>
+      </LayerDesign>
+      <OperateOnResidueSubset name="design_core" selector="pick_surface_and_boundary">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="design_boundary" selector="pick_core_and_surface">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="design_surface" selector="pick_core_and_boundary">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="design_core_SASA" selector="pick_surface_and_boundary_SASA">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="design_boundary_SASA" selector="pick_core_and_surface_SASA">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="design_surface_SASA" selector="pick_core_and_boundary_SASA">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="design_surface_SASA_end" selector="pick_core_and_boundary_SASA_end">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="fdes_repack_only" selector="fdes_no_design" >
+        <RestrictToRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="redesign_ala_met_phe" selector="ala_and_met_and_phe" >
+        <RestrictAbsentCanonicalAASRLT aas="AMILVF" />
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="redesign_boundary_polars" selector="boundary_polars" >
+        <RestrictAbsentCanonicalAASRLT aas="AVLIMSTK" />
+      </OperateOnResidueSubset>
+      <InitializeFromCommandline name="init"/>
+      <OperateOnResidueSubset name="hbnet_task" selector="hbnet_residues">
+        <RestrictToRepackingRLT/>
+      </OperateOnResidueSubset>
+      <RestrictAbsentCanonicalAAS name="ala_only" resnum="0" keep_aas="A" />
+      <RestrictToRepacking name="repack_only" />
+      <OperateOnCertainResidues name="ILV">
+        <NoResFilter>
+          <ResidueName3Is name3="ILE,LEU,VAL"/>
+        </NoResFilter>
+        <PreventRepackingRLT/>
+      </OperateOnCertainResidues>
+      <OperateOnCertainResidues name="aro_apolar">
+        <NoResFilter>
+          <ResidueType aromatic="1" apolar="1" polar="0" charged="0"/>
+        </NoResFilter>
+        <PreventRepackingRLT/>
+      </OperateOnCertainResidues>
+      <OperateOnResidueSubset name="A_ILV" selector="not_chain_a_LIV">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="B_ILV" selector="not_chain_b_LIV">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      <OperateOnResidueSubset name="AB_interface_ILV" selector="not_AB_interface_LIV">
+        <PreventRepackingRLT/>
+      </OperateOnResidueSubset>
+      
+      <OperateOnResidueSubset name="DEhqtnsya" selector="rotor_res">
+      <RestrictAbsentCanonicalAASRLT aas="DEQTNSYA"/>
+      </OperateOnResidueSubset>
+      
+      <OperateOnResidueSubset name="KRhqtnsya" selector="axle_res">
+      <RestrictAbsentCanonicalAASRLT aas="KRHQTNSYA"/>
+      </OperateOnResidueSubset>
+      
+   <RetrieveStoredTask name="quasi_sym_task" task_name="quasi_sym_task" />
+      
+</TASKOPERATIONS>
+<FILTERS>
+  ClashCheck name="clash_check" clash_dist="2" nsub_bblock="1" cutoff="0" verbose="0" write2pdb="0"/>
+   <SymUnsatHbonds name="sym_uhb" cutoff="9" confidence="0"/>
+   <BuriedUnsatHbonds2 name="uhb2" scorefxn="hard_cst" cutoff="6" AHD_cutoff="90" confidence="0"/>
+   <ResidueCount name="ala_count" max_residue_count="30" residue_types="ALA" confidence="0"/>
+</FILTERS>
+  <MOVERS>
+      <SetupForSymmetry name="setup_symm" definition="/home/yhsia/symdef/C/C2_2.sym"/>
+     
+           
+      <StoreQuasiSymmetricTaskMover name="quasi_sym_mov"
+		task_name="quasi_sym_task"
+		quasi_symm_comp="A"
+		num_quasi_repeats="8"
+		offset_resis="0"
+		task_operations="DEhqtnsya,KRhqtnsya"
+		overwrite="1" />
+
+      <DumpPdb name="dump" fname="dumped_" tag_time="True"/>
+    
+      <AddConstraintsToCurrentConformationMover name="add_cst1" use_distance_cst="0" coord_dev="2.0" CA_only="true"/>
+      <ClearConstraintsMover name="clearconstraints"/>
+      <SymMinMover name="hardmin_bb" scorefxn="bbmin_hard_cart" type="lbfgs_armijo_nonmonotone" tolerance="0.0001" chi="0" bb="1" bondangle="1" bondlength="1" jump="all" cartesian="1" />
+      <SymMinMover name="hardmin_sconly1" scorefxn="hard_cst" chi="1" bb="0" bondangle="0" bondlength="0"/>
+
+
+    <HBNetStapleInterface scorefxn="hard" name="hbnet_interf" total_num_mc_runs="10000" monte_carlo_branch="true" show_task="0" verbose="0" no_heavy_unsats_allowed="1" write_network_pdbs="0" write_cst_files="0"  min_network_size="3" min_intermolecular_hbonds="2" min_helices_contacted_by_network="2" min_networks_per_pose="1" hb_threshold="-0.5" task_operations="current,arochi,quasi_sym_task,do_not_touch,KRhqtnsya,DEhqtnsya" />  
+      
+      <SymPackRotamersMover name="hardpack_surface" scorefxn="up_ele" task_operations="arochi,quasi_sym_task,do_not_touch,KRhqtnsya,DEhqtnsya"/> 
+</MOVERS>
+<PROTOCOLS>
+	Add filter="clash_check" />
+  <Add mover="setup_symm"/>
+  <Add mover="quasi_sym_mov"/>
+  Add mover="hbnet_interf"/>
+  <Add mover="hardpack_surface"/>
+  <Add filter="ala_count"/>
+  <Add filter="uhb2"/>
+  <Add filter="sym_uhb"/>
+
+  Add mover_name="MPM_design" />
+ 
+</PROTOCOLS>
+</ROSETTASCRIPTS>
