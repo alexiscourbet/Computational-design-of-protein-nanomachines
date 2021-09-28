@@ -1,7 +1,5 @@
 # Computational design of protein nanomachines
 
-====================================================================================
-
 Code and software used to design de novo protein nanomachines. Supplementary material for "Computational design of nanoscale rotational mechanics in de novo protein assemblies"
 
 Computationally designed self-assembling and genetically encodable protein rotary machines sample internal degrees of freedom sculpted within the energy landscape.
